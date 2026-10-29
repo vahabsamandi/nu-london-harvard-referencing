@@ -76,5 +76,5 @@ D('clear').addEventListener('click',renderFields);
 D('loadExample').addEventListener('click',()=>{renderFields();const x=EX[selected.id];if(!x){setStatus('No prefilled example for this category. Use the university guide.');return}for(const [k,v] of Object.entries(x)){if(k==='citekey'){D('citekey').value=v;continue}const f=D('f_'+k);if(f)f.value=v;}update()});
 renderFields();
 </script>
-<footer>NU-London Created by VS</footer>
+<footer>NU-London — Created by Vahab Samandi</footer>
 </body></html>

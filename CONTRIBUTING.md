@@ -1,5 +1,7 @@
 # Contributing
 
+**Repository author and maintainer:** [Vahab Samandi](https://github.com/vahabsamandi)
+
 Thank you for helping improve the NU London Harvard referencing style.
 
 ## Report an issue

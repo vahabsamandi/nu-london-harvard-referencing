@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NU London Harvard — Reference Helper</title>
+<style>
+:root{color-scheme:light;font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;--ink:#18213a;--muted:#50617b;--accent:#b22533;--bg:#f4f5f8;--line:#dce2eb}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-size:15px}header{background:#fff;border-bottom:4px solid var(--accent)}header .in{max-width:1020px;margin:auto;padding:24px}h1{font-size:26px;margin:0 0 8px}h2{font-size:19px;margin:0 0 14px}p{line-height:1.55}main{max-width:1020px;margin:20px auto 50px;padding:0 14px}section{background:white;border:1px solid var(--line);border-radius:12px;padding:22px;margin-bottom:16px;box-shadow:0 2px 6px #1c294108}.muted,small{color:var(--muted)}.row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.form-cell{display:flex;flex-direction:column;gap:6px;margin:8px 0}label{font-weight:650;font-size:14px}input,select,textarea{font:inherit;border:1px solid #b7c2d0;border-radius:7px;padding:10px;background:white;color:#19253b;width:100%;min-width:0}input:focus,select:focus,textarea:focus{outline:2px solid #536b9c;outline-offset:1px}.micro{font-size:12px;color:var(--muted);line-height:1.4}.actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:18px}button{border:1px solid #aeb8c7;border-radius:7px;padding:10px 16px;background:#fff;cursor:pointer;font-weight:700;color:#243047}button.primary{border-color:#a42031;background:var(--accent);color:white}button:hover{filter:brightness(.96)}button:disabled{opacity:.6;cursor:not-allowed}pre{margin:0;overflow:auto;white-space:pre-wrap;word-break:break-word;color:#1f304f;background:#f5f7fa;padding:15px;border-radius:8px;border:1px solid var(--line);min-height:130px;font:13px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace}.chip{background:#f0e6e8;color:#853442;display:inline-block;border-radius:4px;font-size:12px;padding:3px 6px}.note{border-left:3px solid #aa2534;background:#fff8f8;padding:10px 14px;margin-top:16px;font-size:14px}#status{min-height:20px;font-weight:650;color:#20724c}#entries{list-style:none;padding:0;margin:10px 0}#entries li{border:1px solid var(--line);padding:10px;margin-top:8px;border-radius:7px;display:flex;justify-content:space-between;gap:10px;align-items:center}#entries code{font-size:12px;overflow-wrap:anywhere}#entries button{padding:5px 9px}footer{max-width:1020px;margin:20px auto 40px;padding:0 14px;font-size:13px;color:var(--muted)}@media(max-width:680px){.row{grid-template-columns:1fr}section{padding:16px}h1{font-size:22px}}
+</style></head><body>
+<header><div class="in"><h1>NU London Harvard Reference Helper</h1><p class="muted" style="margin:0">Create ready-to-paste BibLaTeX entries for the custom <code>nulondon-harvard</code> style. No BibTeX knowledge needed.</p></div></header>
+<main>
+<section><h2>1. Choose your source</h2><div class="row"><div class="form-cell"><label for="type">Type of reference</label><select id="type"></select></div><div class="form-cell"><label for="citekey">Citation key</label><input id="citekey" placeholder="Leave blank to generate automatically"><span class="micro">Used like <code>\parencite{smith2021}</code>. Give each source a unique key.</span></div></div>
+<div id="fields" class="row"></div>
+<div class="form-cell"><label><input id="corp" type="checkbox" style="width:auto;margin-right:8px" checked>Author is an organisation or YouTube channel, not a person</label><span class="micro">For individual authors, enter names as <code>Smith, John and Jones, Jane</code>. For an organisation, just enter <code>Ministry of Justice</code>; the helper adds the necessary braces.</span></div>
+<div class="actions"><button id="loadExample" type="button">Fill sample details</button><button id="clear" type="button">Clear this reference</button></div>
+<div class="note"><strong>Check the source first.</strong> This tool formats the details you enter; it does not look up or verify source metadata. Copy dates, titles, author/channel and report numbers from the original publication.</div></section>
+<section><h2>2. Copy your BibLaTeX entry</h2><pre id="preview" aria-label="Generated BibLaTeX entry"></pre><div class="actions"><button class="primary" id="copy">Copy BibLaTeX</button><button id="copyCite">Copy LaTeX citation</button><span id="status" aria-live="polite"></span></div></section>
+
+</main>
+<script>
+"use strict";
+const D=(id)=>document.getElementById(id);
+const today=()=>{const x=new Date();return [x.getFullYear(),String(x.getMonth()+1).padStart(2,'0'),String(x.getDate()).padStart(2,'0')].join('-')};
+const F={
+author:['Author or organisation','For people: Surname, First and Surname, First. For a channel/department: its exact public name.'],editor:['Editor(s)','For people: Surname, First and Surname, First.'],date:['Publication date','YYYY or YYYY-MM-DD. Leave blank if genuinely unknown.'],title:['Title','Copy from the original source; keep important capitals such as acronyms.'],booktitle:['Book, proceedings or series title','Title of the parent publication'],journaltitle:['Journal or newspaper name','Use the journal/newspaper title exactly.'],edition:['Edition','For example: 2nd edn.'],location:['Publication/distribution place','For example: London'],publisher:['Publisher/distributor','Publisher, including company if relevant'],pages:['Page numbers','For example: 11--19'],volume:['Volume/series number','Number only'],number:['Issue, episode, report or CP number','For example: 8 or CP 581'],url:['Original source URL','Copy the address from the publication website.'],urldate:['Date accessed','YYYY-MM-DD. This should be when you actually visited the source.'],organization:['Website, channel, or platform','For example: YouTube, BBC, The Guardian'],institution:['Government or issuing institution','For example: UK Government'],note:['Director/interviewer/role','Enter the name or other information required by the guide'],eventdate:['Event, broadcast or posting date','YYYY-MM-DD'],venue:['Event location','For example: London'],howpublished:['Communication method','For example: Email to a Data Analyst'],doi:['DOI','For example: 10.1111/joms.12634'],shorttitle:['Short citation title','Optional: shortened work title'],shorthand:['Legal citation name','Optional: overrides normal author-year in-text citation']};
+const T=[
+{id:'book',label:'Book (printed)',kind:'book',fields:'author date title edition location publisher'},
+{id:'editedbook',label:'Edited book',kind:'collection',fields:'editor date title edition location publisher'},
+{id:'chapter',label:'Chapter within edited book',kind:'incollection',fields:'author date title editor booktitle edition location publisher pages'},
+{id:'ebook',label:'E-book',kind:'book',sub:'ebook',fields:'author date title edition location publisher url urldate',online:true},
+{id:'journal',label:'Journal article (printed)',kind:'article',sub:'print',fields:'author date title journaltitle volume number pages doi'},
+{id:'onlinejournal',label:'Journal article (online)',kind:'article',fields:'author date title journaltitle volume number pages doi url urldate',online:true},
+{id:'newspaper',label:'Newspaper/magazine article (printed)',kind:'article',sub:'newspaper',fields:'author date title journaltitle edition pages'},
+{id:'onlinenewspaper',label:'Newspaper/magazine article (online)',kind:'article',sub:'newspaper',fields:'author date title journaltitle edition url urldate',online:true},
+{id:'website',label:'Entire website',kind:'online',fields:'author date title url urldate',online:true},
+{id:'webpage',label:'Individual webpage',kind:'online',fields:'author date title organization url urldate',online:true},
+{id:'pdf',label:'PDF/leaflet from webpage',kind:'misc',sub:'pdf',fields:'author date title organization url urldate',online:true},
+{id:'blog',label:'Blog post',kind:'misc',sub:'blog',fields:'author date title organization url urldate',online:true},
+{id:'podcast',label:'Podcast',kind:'misc',sub:'podcast',fields:'author date title organization url urldate',online:true},
+{id:'film',label:'Film',kind:'misc',sub:'film',fields:'date title note location publisher'},
+{id:'tv',label:'TV series episode',kind:'misc',sub:'tv',fields:'date title booktitle volume number organization eventdate'},
+{id:'interview',label:'Filmed interview',kind:'misc',sub:'interview',fields:'author date title note journaltitle eventdate url urldate',online:true},
+{id:'youtube',label:'YouTube video',kind:'misc',sub:'youtube',fields:'author date title url urldate',defaults:{organization:'YouTube'},online:true,corporate:true},
+{id:'tweet',label:'Social-media post / tweet',kind:'misc',sub:'tweet',fields:'author date title eventdate url urldate',online:true,corporate:true},
+{id:'govreport',label:'Government report',kind:'report',fields:'author date title institution number url urldate',online:true,corporate:true},
+{id:'whitepaper',label:'Government green/white paper',kind:'report',sub:'whitepaper',fields:'author date title number institution url urldate',defaults:{institution:'UK Government'},online:true,corporate:true},
+{id:'act',label:'Act of Parliament',kind:'misc',sub:'act',fields:'title date shorthand organization url urldate',defaults:{organization:'UK Government'},online:true},
+{id:'statutory',label:'Statutory Instrument',kind:'misc',sub:'statutory',fields:'title date organization url urldate',online:true},
+{id:'independent',label:'Independent body report',kind:'report',fields:'author date title number url urldate',online:true,corporate:true},
+{id:'eu',label:'EU legislation',kind:'misc',sub:'eu',fields:'title date shorthand url urldate',online:true},
+{id:'personal',label:'Personal communication',kind:'misc',sub:'personal',fields:'author date note organization howpublished eventdate'},
+{id:'conference',label:'Conference proceedings paper',kind:'inproceedings',fields:'author date title editor booktitle eventdate venue url urldate'},
+{id:'clinicaltrial',label:'Clinical trial',kind:'misc',sub:'clinicaltrial',fields:'author date title organization number url urldate',online:true},
+{id:'webinar',label:'Webinar',kind:'misc',sub:'webinar',fields:'author date title organization eventdate url urldate',online:true}
+];
+const EX={
+youtube:{author:'The Economist',date:'2022',title:'How will businesses use the metaverse?',url:'https://www.youtube.com/watch?v=LEgHRAQ1HmE',urldate:'2022-12-03',citekey:'youtube2022'},
+whitepaper:{author:'Ministry of Justice',date:'2021-12-07',title:'Prisons Strategy White Paper',number:'CP 581',institution:'UK Government',url:'https://www.gov.uk/government/publications/prisons-strategy-white-paper',urldate:'2022-05-17',citekey:'whitepaper2021'},
+onlinejournal:{author:'George, G. and Lakhani, R. and Puranam, R.',date:'2020',title:'What has changed? The impact of Covid pandemic on the technology and innovation management research agenda',journaltitle:'Journal of Management Studies',volume:'57',number:'8',pages:'1754--1758',doi:'10.1111/joms.12634',urldate:'2022-10-07',citekey:'george2020'},
+book:{author:'Martinez, W. and Martinez, A. and Solka, J.',date:'2017',title:'Exploratory data analysis with {MATLAB}',edition:'2nd edn.',location:'Boca Raton, FL',publisher:'CRC Press',citekey:'martinez2017'}
+};
+let selected=T.find(t=>t.id==='youtube');
+T.forEach(t=>{let o=document.createElement('option');o.value=t.id;o.textContent=t.label;D('type').append(o)});
+D('type').value='youtube';
+function renderFields(){selected=T.find(t=>t.id===D('type').value);D('fields').replaceChildren();let fields=selected.fields.split(' ');for(const f of fields){let c=document.createElement('div');c.className='form-cell';let id='f_'+f;let l=document.createElement('label');l.htmlFor=id;l.textContent=F[f][0];let i=document.createElement('input');i.id=id;i.placeholder=F[f][1];i.dataset.field=f;if(f==='urldate')i.value=today();let sm=document.createElement('span');sm.className='micro';sm.textContent=F[f][1];c.append(l,i,sm);D('fields').append(c);i.addEventListener('input',update)}D('corp').checked=!!(selected.corporate||selected.id==='youtube'||selected.id==='webpage'||selected.id==='website');D('citekey').value='';D('status').textContent='';update()}
+function currentVals(){const vals={...(selected.defaults||{})};D('fields').querySelectorAll('input').forEach(el=>{if(el.value.trim())vals[el.dataset.field]=el.value.trim()});return vals}
+function escapeTex(s,urlField=false){if(urlField)return s;return s.replace(/(?<!\\)([%&#])/g,'\\$1')}
+function makeKey(v){const s=(v.author||v.editor||v.title||'source').replace(/\{.*?\}/g,'').trim();const who=(s.includes(',')?s.split(',')[0]:s.split(/\s+/).slice(-1)[0]);const y=(v.date||'nd').slice(0,4);const k=(who+y).toLowerCase().replace(/[^a-z0-9]/g,'');return k||'source'}
+function getKey(v){return D('citekey').value.trim()||makeKey(v)}
+function generate(){const v=currentVals(),key=getKey(v);const out=[];if(selected.sub)out.push(['entrysubtype',selected.sub]);const orders=['author','editor','date','title','booktitle','journaltitle','edition','volume','number','pages','note','howpublished','organization','institution','publisher','location','venue','eventdate','url','doi','urldate','shorttitle','shorthand'];for(let k of orders){if(!v[k])continue;let x=v[k];if(k==='author'&&D('corp').checked)x='{'+escapeTex(x)+'}';else if(k==='organization'||k==='institution')x='{'+escapeTex(x)+'}';else x=escapeTex(x,k==='url'||k==='doi');out.push([k,x])}return '@'+selected.kind+'{'+key+',\n'+out.map(a=>'  '+a[0]+' = {'+a[1]+'}').join(',\n')+'\n}'}
+function update(){D('preview').textContent=generate()}
+async function copyText(value){try{await navigator.clipboard.writeText(value);return true}catch(e){let x=document.createElement('textarea');x.value=value;x.style.position='fixed';x.style.opacity='0';document.body.append(x);x.select();const success=document.execCommand('copy');x.remove();return success}}
+function setStatus(v){D('status').textContent=v;}
+D('type').addEventListener('change',renderFields);D('citekey').addEventListener('input',update);D('corp').addEventListener('change',update);
+D('copy').addEventListener('click',async()=>setStatus(await copyText(generate())?'Copied. Paste into references.bib.':'Copy unavailable. Select the code above manually.'));
+D('copyCite').addEventListener('click',async()=>setStatus(await copyText('\\parencite{'+getKey(currentVals())+'}')?'Citation command copied.':'Copy unavailable.'));
+D('clear').addEventListener('click',renderFields);
+D('loadExample').addEventListener('click',()=>{renderFields();const x=EX[selected.id];if(!x){setStatus('No prefilled example for this category. Use the university guide.');return}for(const [k,v] of Object.entries(x)){if(k==='citekey'){D('citekey').value=v;continue}const f=D('f_'+k);if(f)f.value=v;}update()});
+renderFields();
+</script>
+<footer>NU-London Created by VS</footer>
+</body></html>

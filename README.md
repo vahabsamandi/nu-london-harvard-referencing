@@ -1,6 +1,8 @@
 # NU London Harvard Referencing for BibLaTeX
 
-An **unofficial, independently prepared** BibLaTeX/Biber author–date style based on Northeastern University London's *Apprenticeship Guide to Harvard Referencing* (July 2025), accompanied by an offline HTML reference generator.
+**Author and maintainer:** [Vahab Samandi](https://github.com/vahabsamandi)
+
+An **unofficial** BibLaTeX/Biber author–date style based on Northeastern University London's *Apprenticeship Guide to Harvard Referencing* (July 2025), accompanied by an offline HTML reference generator.
 
 > **Not an official university release.** Check all entries and output against the university referencing guide before submission. The source guide is not bundled in this repository.
 

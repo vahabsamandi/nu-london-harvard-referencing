@@ -1,0 +1,287 @@
+% Northeastern University London Apprenticeship Harvard - bibliography style
+% Based on the July 2025 Apprenticeship Guide to Harvard Referencing.
+% Works with biblatex and Biber. See README.md for field mappings and limitations.
+\ProvidesFile{nulondon-harvard.bbx}[2026/10/12 v1.0 NU London Harvard references]
+\RequireBibliographyStyle{authoryear}
+
+% NU London guide p.2 prints Latin "et al." in italics, in both citations and bibliography.
+\DefineBibliographyExtras{british}{%
+  \DeclareBibstringSet{latin}{andothers}%
+  \DeclareBibstringSetFormat{latin}{\mkbibemph{#1}}%
+}
+\UndefineBibliographyExtras{british}{%
+  \UndeclareBibstringSet{latin}%
+}
+
+
+% Exact organisation / bibliographic rules from the NU London guide.
+\ExecuteBibliographyOptions{sorting=nyt,giveninits=true,maxbibnames=3,minbibnames=1,maxcitenames=3,mincitenames=1,uniquename=false,uniquelist=false,doi=true,url=true,isbn=false,eprint=false,urldate=long,dateabbrev=false}
+\renewrobustcmd*{\bibinitdelim}{} % A.F., not A. F. (guide examples)
+\DeclareNameAlias{author}{family-given}
+\DeclareNameAlias{editor}{family-given}
+\DeclareDelimFormat{finalnamedelim}{\addspace\bibstring{and}\space}
+\DeclareDelimFormat{multinamedelim}{\addcomma\space}
+\DeclareDelimFormat{andothersdelim}{\addspace}
+\DeclareLabeldate{\field{date}\field{year}\literal{nodate}}
+\renewcommand*{\bibfont}{\normalfont}
+\setlength{\bibitemsep}{\baselineskip}
+\setlength{\bibhang}{0pt}
+% URLs can be long; avoid excessive spacing and margin overflows.
+\AtBeginBibliography{\raggedright\emergencystretch=2em\relax}
+
+% Display the URL / DOI itself, not link text or a clickable hyperlink.
+\DeclareFieldFormat{url}{\nolinkurl{#1}}
+\DeclareFieldFormat{doi}{\nolinkurl{https://doi.org/#1}}
+\DeclareFieldFormat{nul:booktitle}{\mkbibemph{#1}}
+\DeclareFieldFormat{nul:parttitle}{\mkbibquote{#1}}
+\DeclareFieldFormat{nul:plaintitle}{#1}
+\DeclareFieldFormat{nul:journal}{\mkbibemph{#1}}
+\DeclareFieldFormat{nul:label}{\mkbibparens{#1}}
+\DeclareFieldFormat{edition}{#1}
+\DeclareFieldFormat{pages}{#1}
+\DeclareFieldFormat{volume}{#1}
+\DeclareFieldFormat{number}{#1}
+
+% Author (year), corporate-author (year), editor (eds.) (year), or title (year).
+\newbibmacro*{nul:date}{\printtext[parens]{\printlabeldateextra}}
+\newbibmacro*{nul:author-year}{%
+  \ifnameundef{author}
+    {\ifnameundef{editor}
+      {\iffieldundef{author}
+        {\printfield[nul:booktitle]{title}}
+        {\printfield{author}}}
+      {\printnames{editor}%
+       \setunit{\addspace}%
+       \printtext{\ifnumgreater{\value{editor}}{1}{(eds.)}{(ed.)}}}}
+    {\printnames{author}}%
+  \setunit{\addspace}%
+  \usebibmacro{nul:date}}
+\newbibmacro*{nul:editor}{%
+  \ifnameundef{editor}{}{%
+    \printnames{editor}%
+    \setunit{\addspace}%
+    \printtext{\ifnumgreater{\value{editor}}{1}{(eds.)}{(ed.)}}}}
+\newbibmacro*{nul:edition}{%
+  \iffieldundef{edition}{}{\setunit{\addspace}\printfield{edition}}}
+\newbibmacro*{nul:place-publisher}{%
+  \iflistundef{location}{}{%
+    \printlist{location}%
+    \setunit{\addcolon\space}}%
+  \iflistundef{publisher}{}{\printlist{publisher}}}
+\newbibmacro*{nul:access-date}{%
+  \iffieldundef{urlday}{}{\printfield{urlday}\addspace}%
+  \iffieldundef{urlmonth}{}{\mkbibmonth{\thefield{urlmonth}}\addspace}%
+  \printfield{urlyear}}
+\newbibmacro*{nul:event-daymonth}{%
+  \iffieldundef{eventday}{}{\printfield{eventday}\addspace}%
+  \iffieldundef{eventmonth}{}{\mkbibmonth{\thefield{eventmonth}}}}
+\newbibmacro*{nul:event-date}{%
+  \iffieldundef{eventday}{}{\printfield{eventday}\addspace}%
+  \iffieldundef{eventmonth}{}{\mkbibmonth{\thefield{eventmonth}}\addspace}%
+  \printfield{eventyear}}
+\newbibmacro*{nul:day-month}{%
+  \iffieldundef{day}{}{\printfield{day}\addspace}%
+  \iffieldundef{month}{}{\mkbibmonth{\thefield{month}}}}
+\newbibmacro*{nul:available}{%
+  % For ProQuest e-books: add keywords={proquest} to the .bib entry.
+  \ifkeyword{proquest}
+    {\printtext{Retrieved from\space\nolinkurl{https://ebookcentral.proquest.com/}}}
+    {\iffieldundef{url}
+      {\iffieldundef{doi}{}{\printtext{Available at:\space}\printfield{doi}}}
+      {\printtext{Available at:\space}\printfield{url}}}%
+  \iffieldundef{urlyear}{}{
+    \setunit{\addspace}%
+    \printtext{(Accessed:\space\usebibmacro{nul:access-date})}}}
+\newbibmacro*{nul:online-available}{%
+  \printtext{[online].}%
+  \setunit{\addspace}%
+  \usebibmacro{nul:available}}
+\newbibmacro*{nul:format-pages}{%
+  \iffieldundef{pages}{}{\printtext{pp.}\printfield{pages}}}
+\newbibmacro*{nul:article-source}{%
+  \printfield[nul:journal]{journaltitle}%
+  \iffieldundef{volume}{}{\setunit{\addcomma\space}\printfield{volume}}%
+  \iffieldundef{number}{}{\printtext[parens]{\printfield{number}}}%
+  \iffieldundef{pages}{}{\setunit{\addcomma\space}\usebibmacro{nul:format-pages}}}
+\newbibmacro*{nul:daymonth}{%
+  \iffieldundef{month}{}{\printdate}}% Input date=YYYY-MM-DD, prints long date incl year.
+
+% Book: Author (year) Title. Edition. Location: Publisher.
+% For e-books add entrysubtype={ebook}, URL or DOI, and urldate.
+\DeclareBibliographyDriver{book}{%
+  \usebibmacro{bibindex}\usebibmacro{begentry}%
+  \usebibmacro{nul:author-year}%
+  \setunit{\addspace}\printfield[nul:booktitle]{title}%
+  \iffieldundef{edition}{}{\newunit\printfield{edition}}%
+  \iffieldequalstr{entrysubtype}{ebook}{%
+    \setunit{\addspace}\printtext{[online]}}{}%
+  \newunit\usebibmacro{nul:place-publisher}%
+  \iffieldequalstr{entrysubtype}{ebook}{%
+    \newunit\usebibmacro{nul:available}}{}%
+  \usebibmacro{finentry}}
+\DeclareBibliographyAlias{mvbook}{book}
+\DeclareBibliographyAlias{collection}{book}
+\DeclareBibliographyAlias{mvcollection}{book}
+
+% Chapter: Author (year) 'Chapter', in Editors (ed./eds.) Book. Edition. City: Publisher, pp.x-y.
+\DeclareBibliographyDriver{incollection}{%
+  \usebibmacro{bibindex}\usebibmacro{begentry}%
+  \usebibmacro{nul:author-year}%
+  \setunit{\addspace}\printfield[nul:parttitle]{title}%
+  \setunit{\addspace}\printtext{in}%
+  \setunit{\addspace}\usebibmacro{nul:editor}%
+  \setunit{\addspace}\printfield[nul:booktitle]{booktitle}%
+  \iffieldundef{edition}{}{\newunit\printfield{edition}}%
+  \newunit\usebibmacro{nul:place-publisher}%
+  \iffieldundef{pages}{}{\setunit{\addcomma\space}\usebibmacro{nul:format-pages}}%
+  \usebibmacro{finentry}}
+\DeclareBibliographyAlias{inbook}{incollection}
+
+% Journal articles (presence of URL or DOI means online journal article).
+\DeclareBibliographyDriver{article}{%
+  \usebibmacro{bibindex}\usebibmacro{begentry}%
+  \iffieldequalstr{entrysubtype}{newspaper}
+    {\usebibmacro{nul:newspaper}}
+    {\usebibmacro{nul:author-year}%
+     \setunit{\addspace}\printfield[nul:parttitle]{title}%
+     \setunit{\addcomma\space}\usebibmacro{nul:article-source}%
+     \iffieldequalstr{entrysubtype}{print}{}{%
+       \iffieldundef{url}{\iffieldundef{doi}{}{%
+         \setunit{\addspace}\usebibmacro{nul:online-available}}}{%
+         \setunit{\addspace}\usebibmacro{nul:online-available}}}}%
+  \usebibmacro{finentry}}
+
+% Newspaper/magazine article: @article with entrysubtype={newspaper}.
+\newbibmacro*{nul:newspaper}{%
+  \usebibmacro{nul:author-year}%
+  \setunit{\addspace}\printfield[nul:parttitle]{title}%
+  \setunit{\addcomma\space}\printfield[nul:journal]{journaltitle}%
+  \iffieldundef{edition}{}{\setunit{\addspace}\printtext[parens]{\printfield{edition}}}%
+  \setunit{\addcomma\space}\usebibmacro{nul:day-month}%
+  \iffieldundef{pages}{}{\setunit{\addcomma\space}\printtext{p.}\printfield{pages}}%
+  \iffieldundef{url}{}{\setunit{\addspace}\usebibmacro{nul:online-available}}}
+
+% Websites and webpages (site name = organization field).
+\DeclareBibliographyDriver{online}{%
+  \usebibmacro{bibindex}\usebibmacro{begentry}%
+  \usebibmacro{nul:author-year}%
+  \ifnameundef{author}{\ifnameundef{editor}{}{\setunit{\addspace}\printfield[nul:booktitle]{title}}}
+    {\setunit{\addspace}\printfield[nul:booktitle]{title}}%
+  \setunit{\addspace}\printtext{[online]}%
+  \iflistundef{organization}{}{\newunit\printlist{organization}}%
+  \newunit\usebibmacro{nul:available}%
+  \usebibmacro{finentry}}
+
+% Government / independent reports / command (white or green) papers.
+\DeclareBibliographyDriver{report}{%
+  \usebibmacro{bibindex}\usebibmacro{begentry}%
+  \usebibmacro{nul:author-year}%
+  \setunit{\addspace}\printfield[nul:booktitle]{title}%
+  \iffieldundef{number}{}{\setunit{\addspace}\printtext[parens]{\printfield{number}}}%
+  \iflistundef{institution}{}{\newunit\printlist{institution}}%
+  \iffieldundef{url}
+    {\newunit\usebibmacro{nul:place-publisher}}
+    {\newunit\usebibmacro{nul:available}}%
+  \usebibmacro{finentry}}
+
+% Proceedings papers.  eventdate / venue for conference date/location.
+\DeclareBibliographyDriver{inproceedings}{%
+  \usebibmacro{bibindex}\usebibmacro{begentry}%
+  \usebibmacro{nul:author-year}%
+  \setunit{\addspace}\printfield[nul:parttitle]{title}%
+  \setunit{\addcomma\space}\printtext{In:}%
+  \setunit{\addspace}\usebibmacro{nul:editor}%
+  \setunit{\addspace}\printfield[nul:booktitle]{booktitle}%
+  \setunit{\addspace}\usebibmacro{nul:event-date}%
+  \iffieldundef{venue}{}{\setunit{\addcomma\space}\printfield{venue}}%
+  \iffieldundef{url}{}{\newunit\printtext{[online]}\setunit{\addspace}\usebibmacro{nul:available}}%
+  \usebibmacro{finentry}}
+\DeclareBibliographyAlias{conference}{inproceedings}
+
+% NU London specialised miscellaneous genres are designated by entrysubtype:
+% pdf, blog, podcast, film, tv, interview, youtube, tweet, act, statutory,
+% eu, personal, clinicaltrial, webinar.  The additional fields to populate
+% are explained in README.md.
+\DeclareBibliographyDriver{misc}{%
+  \usebibmacro{bibindex}\usebibmacro{begentry}%
+  \ifboolexpr{test {\iffieldequalstr{entrysubtype}{film}} or
+              test {\iffieldequalstr{entrysubtype}{tv}} or
+              test {\iffieldequalstr{entrysubtype}{act}} or
+              test {\iffieldequalstr{entrysubtype}{statutory}} or
+              test {\iffieldequalstr{entrysubtype}{eu}}}
+    {\iffieldequalstr{entrysubtype}{film}
+       {\printfield[nul:booktitle]{title}}
+       {\iffieldequalstr{entrysubtype}{tv}
+         {\printfield[nul:parttitle]{title}}
+         {\printfield[nul:plaintitle]{title}}}%
+     \iffieldequalstr{entrysubtype}{act}{}{% guide includes date in the title of an Act
+      \iffieldequalstr{entrysubtype}{statutory}{}{% ditto, Statutory Instruments
+        \setunit{\addspace}\usebibmacro{nul:date}}}}
+    {\usebibmacro{nul:author-year}%
+     \iffieldequalstr{entrysubtype}{personal}{}{%
+       \setunit{\addspace}%
+       \ifboolexpr{test {\iffieldequalstr{entrysubtype}{interview}}}
+         {\printfield[nul:parttitle]{title}}
+         {\ifnameundef{author}
+          {\ifnameundef{editor}{}% Title already printed in author-year fallback.
+             {\printfield[nul:plaintitle]{title}}}
+          {\iffieldequalstr{entrysubtype}{pdf}
+            {\printfield[nul:booktitle]{title}}
+            {\printfield[nul:plaintitle]{title}}}}}}%
+  \ifboolexpr{test {\iffieldequalstr{entrysubtype}{pdf}}}
+    {\setunit{\addspace}\printtext{[PDF]}%
+     \iflistundef{organization}{}{\setunit{\addcomma\space}\printlist{organization}}%
+     \iffieldundef{url}
+       {\newunit\printtext{Unpublished}%
+        \iffieldundef{urlyear}{}{\setunit{\addspace}\printtext{(Accessed:\space\usebibmacro{nul:access-date})}}}
+       {\newunit\usebibmacro{nul:available}}}{}
+  \ifboolexpr{test {\iffieldequalstr{entrysubtype}{blog}} or
+              test {\iffieldequalstr{entrysubtype}{podcast}} or
+              test {\iffieldequalstr{entrysubtype}{youtube}} or
+              test {\iffieldequalstr{entrysubtype}{tweet}} or
+              test {\iffieldequalstr{entrysubtype}{webinar}}}
+    {\setunit{\addspace}%
+     \iffieldequalstr{entrysubtype}{blog}{\printtext{[Blog]}}{}%
+     \iffieldequalstr{entrysubtype}{podcast}{\printtext{[Podcast]}}{}%
+     \iffieldequalstr{entrysubtype}{youtube}{\printtext{[online]}}{}%
+     \iffieldequalstr{entrysubtype}{tweet}{\printtext{[Twitter]}}{}%
+     \iffieldequalstr{entrysubtype}{webinar}{\printtext{[Webinar]}}{}%
+     \iflistundef{organization}{}{\newunit
+       \ifboolexpr{test {\iffieldequalstr{entrysubtype}{blog}} or test {\iffieldequalstr{entrysubtype}{podcast}}}
+         {\printtext[emph]{\printlist{organization}}}
+         {\printlist{organization}}}%
+     \ifboolexpr{test {\iffieldequalstr{entrysubtype}{tweet}} or
+                 test {\iffieldequalstr{entrysubtype}{webinar}}}
+       {\iffieldundef{eventyear}{}{\newunit\usebibmacro{nul:event-date}}}{}%
+     \iffieldundef{url}{}{\newunit\usebibmacro{nul:available}}}{}
+  \iffieldequalstr{entrysubtype}{film}{%
+    \setunit{\addspace}\printtext{Directed by}\setunit{\addspace}\printfield{note}%
+    \setunit{\addspace}\printtext{[Film]}%
+    \newunit\usebibmacro{nul:place-publisher}}{}
+  \iffieldequalstr{entrysubtype}{tv}{%
+    \setunit{\addspace}\printfield[nul:booktitle]{booktitle}%
+    \iffieldundef{volume}{}{\setunit{\addcomma\space}\printtext{Series\space}\printfield{volume}}%
+    \iffieldundef{number}{}{\setunit{\addcomma\space}\printtext{episode\space}\printfield{number}}%
+    \iflistundef{organization}{}{\newunit\printlist{organization}}%
+    \iffieldundef{eventyear}{}{\setunit{\addcomma\space}\usebibmacro{nul:event-date}}}{}%
+  \iffieldequalstr{entrysubtype}{interview}{%
+    \setunit{\addcomma\space}\printtext{interviewed by}\setunit{\addspace}\printfield{note}%
+    \setunit{\addcomma\space}\printfield[nul:journal]{journaltitle}%
+    \iffieldundef{eventyear}{}{\setunit{\addcomma\space}\usebibmacro{nul:event-daymonth}}%
+    \setunit{\addspace}\usebibmacro{nul:online-available}}{}%
+  \ifboolexpr{test {\iffieldequalstr{entrysubtype}{act}} or
+              test {\iffieldequalstr{entrysubtype}{statutory}} or
+              test {\iffieldequalstr{entrysubtype}{eu}}}
+    {\iflistundef{organization}{}{\newunit\printlist{organization}}%
+     \newunit\usebibmacro{nul:available}}{}%
+  \iffieldequalstr{entrysubtype}{personal}{%
+    \setunit{\addspace}\printfield{note}%
+    \iflistundef{organization}{}{\setunit{\addcomma\space}\printlist{organization}}%
+    \iffieldundef{howpublished}{}{\newunit\printfield{howpublished}}%
+    \iffieldundef{eventyear}{}{\setunit{\addcomma\space}\usebibmacro{nul:event-daymonth}}}{}%
+  \iffieldequalstr{entrysubtype}{clinicaltrial}{%
+    \iflistundef{organization}{}{\newunit\printlist{organization}}%
+    \iffieldundef{number}{}{\setunit{\addspace}\printtext[parens]{\printfield{number}}}%
+    \newunit\usebibmacro{nul:available}}{}%
+  \usebibmacro{finentry}}
+\DeclareBibliographyAlias{unpublished}{misc}

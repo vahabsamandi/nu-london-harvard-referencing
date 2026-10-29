@@ -1,0 +1,19 @@
+% Northeastern University London Apprenticeship Harvard - citation style
+% Based on the July 2025 Apprenticeship Guide to Harvard Referencing.
+\ProvidesFile{nulondon-harvard.cbx}[2026/10/12 v1.0 NU London Harvard citations]
+\RequireCitationStyle{authoryear}
+
+% (Author, Year), (Author and Author, Year), (Author et al., Year)
+\ExecuteBibliographyOptions{uniquename=false,uniquelist=false}
+\DeclareDelimFormat{nameyeardelim}{\addcomma\space}
+\DeclareDelimFormat{nonameyeardelim}{\addcomma\space}
+\DeclareDelimFormat{finalnamedelim}{\addspace\bibstring{and}\space}
+\DeclareDelimFormat{multinamedelim}{\addcomma\space}
+\DeclareDelimFormat{multicitedelim}{\addsemicolon\space}
+
+% British Harvard guide: et al. at four or more authors; enforced by
+% maxcitenames=3,mincitenames=1 in the main package options.
+% Use \parencite, \textcite, \parencites and \parencite[<locator>]{key}.
+
+% Use italic title when a work has no author (see guide, p. 3).
+\DeclareFieldFormat{citetitle}{\iffieldequalstr{entrysubtype}{tv}{\mkbibquote{#1}}{\mkbibemph{#1}}}
